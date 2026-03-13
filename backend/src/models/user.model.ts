@@ -19,6 +19,7 @@ export interface IUser extends Document {
   district?: string;
   height?: number;
   weight?: number;
+  occupation?: string;
   verifyOTP?: string;
   verifyOTPExpires?: Date;
 
@@ -71,6 +72,7 @@ const UserSchema = new Schema<IUser>(
     district: String,
     height: Number,
     weight: Number,
+    occupation: String,
     verifyOTP: String,
     verifyOTPExpires: Date,
   },
