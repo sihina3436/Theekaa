@@ -7,9 +7,9 @@ import bcrypt from "bcryptjs";
 
 /* ---------- SIGNUP ---------- */
 export const Signup = async (req: AuthRequest, res: Response) => {
-  const {nic, name, phone, email, password } = req.body;
+  const {nic, phone, email, password } = req.body;
 
-  if (!nic || !name || !phone || !email || !password) {
+  if (!nic || !phone || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
   const existingUser = await User.findOne({ phone });
@@ -18,7 +18,7 @@ export const Signup = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ message: "Phone number already in use" });
   }
 
-  const user = new User({ nic, name, phone, email, password });
+  const user = new User({ nic, phone, email, password });
   await user.save();
   const token = generateToken({
     id: user._id.toString(),
