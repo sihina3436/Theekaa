@@ -22,7 +22,8 @@ export interface IUser extends Document {
   occupation?: string;
   verifyOTP?: string;
   verifyOTPExpires?: Date;
-
+  dateOfBirth?: Date;
+  age?: number; 
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -75,6 +76,8 @@ const UserSchema = new Schema<IUser>(
     occupation: String,
     verifyOTP: String,
     verifyOTPExpires: Date,
+    dateOfBirth: Date,
+    age: Number,
   },
   {
     timestamps: true,
