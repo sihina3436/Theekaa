@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Post from "../models/post.model";
+import User from "../models/user.model";
 import cloudinary from "../config/cloudinary";
 import streamifier from "streamifier";
 
@@ -21,12 +22,43 @@ export const CreatePostRequest = async (req: any, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    const user = await User.findById(req.user._id);
+
+    // ✅ FIX 1: null check
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // ✅ FIX 2: correct validation
+    if (
+        !user.first_name ||
+        !user.last_name ||
+        !user.email ||
+        !user.nic ||
+        !user.gender ||
+        !user.marriage_status ||
+        !user.income ||
+        !user.district ||
+        !user.height ||
+        !user.weight ||
+        !user.occupation
+
+    ) {
+      return res.status(400).json({
+        message: "Please complete your profile before creating a post",
+      });
+    }
+
+    if( user.status !== "verify"){
+      return res.status(400).json({ message: "Your account is not verified yet. Please wait for admin approval." });
+    }
+
     if (!other_details || !current_living || !education || !image) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const post = new Post({
-      user_id: req.user.id,
+      user_id: req.user._id, // ✅ secure
       other_details,
       current_living,
       education,
@@ -34,11 +66,14 @@ export const CreatePostRequest = async (req: any, res: Response) => {
     });
 
     await post.save();
+
     res.status(201).json(post);
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Cannot create Post! Something went wrong" });
+    res.status(500).json({
+      message: "Cannot create Post! Something went wrong",
+    });
   }
 };
 // Get All posts

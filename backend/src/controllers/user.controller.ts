@@ -69,6 +69,7 @@ export const Signin = async (req: AuthRequest, res: Response) => {
 
 /* ---------- GET USER ---------- */
 export const getUser = async (req: AuthRequest, res: Response) => {
+
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -99,10 +100,15 @@ export const UpdateProfile = async (req: AuthRequest, res: Response) => {
 };
 
 /* ---------- GET ALL USERS ---------- */
-export const getAllUser = async (_req: AuthRequest, res: Response) => {
-  const users = await User.find().select("-password");
-  res.json(users);
-};
+export const getAllUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+    console.error("Get all users error:", error);
+  }
+}
 
 /* ---------- FORGOT PASSWORD ---------- */
 export const forgotPassword = async (req: AuthRequest, res: Response) => {
@@ -161,23 +167,15 @@ export const resetPassword = async (req: AuthRequest, res: Response) => {
 /* ---------- DELETE USER BY ID ---------- */
 export const deleteUserById = async (req: AuthRequest, res: Response) => {
   try {
-    // 1️⃣ Check authentication
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
 
     const {id} = req.params;
     
-
-    // 2️⃣ Delete user
     const deletedUser = await User.findByIdAndDelete(id);
 
-    // 3️⃣ If user not found
     if (!deletedUser) {
       return res.status(404).json({ message: "**** User not found" });
     }
 
-    // 4️⃣ Success response
     return res.status(200).json({
       message: "User deleted successfully",
     });
@@ -253,3 +251,22 @@ export const updateProfilePicture = async (req: AuthRequest, res: Response) => {
     console.error("Update profile picture error:", error);
   }
 }
+
+/* ---------- Update User Profile Status ---------- */
+export const updateProfileStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    
+    const { userId, status } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.status = status;
+    await user.save();
+    res.json({ message: "Profile status updated", status });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+    console.error("Update profile status error:", error);
+  }
+}
+

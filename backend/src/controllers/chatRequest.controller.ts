@@ -3,11 +3,15 @@ import User from "../models/user.model";
 import Post from "../models/post.model";
 import ChatRequest from "../models/chatRequest.model";
 
-// make chat Request
+// ✅ Send Request
 export const makeRequest = async (req: Request, res: Response) => {
   const { senderId, receiverId } = req.body;
 
   try {
+    if (senderId === receiverId) {
+      return res.status(400).json({ message: "You cannot send request to yourself" });
+    }
+
     const sender = await User.findById(senderId);
     const receiver = await User.findById(receiverId);
 
@@ -15,83 +19,89 @@ export const makeRequest = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Must have post
     const senderPost = await Post.findOne({ user_id: senderId });
-  
-
     if (!senderPost) {
-      return res.status(404).json({ message: "You must have a post to send a chat request! Create a post first." });
+      return res.status(400).json({
+        message: "Create a post before sending chat request",
+      });
     }
 
-    const existingRequest = await ChatRequest.findOne({
-      senderId,
-      receiverId,
+    // Check BOTH directions
+    const existing = await ChatRequest.findOne({
+      $or: [
+        { senderId, receiverId },
+        { senderId: receiverId, receiverId: senderId },
+      ],
     });
 
-    if (existingRequest) {
-      return res.status(400).json({
-        message: "Chat request already sent",
-      });
+    if (existing) {
+      if (existing.status === "blocked") {
+        return res.status(403).json({ message: "User is blocked" });
+      }
+      return res.status(400).json({ message: "Request already exists" });
     }
 
     await ChatRequest.create({
       senderId,
       receiverId,
-      status: "pending",
     });
 
     res.status(201).json({ message: "Chat request sent" });
   } catch (error: any) {
     console.error(error);
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Get all chat requests RECEIVED by a user
+
+
+// ✅ Received Requests
 export const getReceivedRequests = async (req: Request, res: Response) => {
   const { receiverId } = req.params;
 
   try {
     const requests = await ChatRequest.find({ receiverId })
-      .populate("senderId", "first_name last_name email image")
+      .populate("senderId", "first_name last_name email ProfilePicture")
       .sort({ createdAt: -1 });
 
     res.json(requests);
   } catch (error: any) {
-    console.error(error);
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Get all chat requests SENT by a user
+
+// ✅ Sent Requests
 export const getSentRequests = async (req: Request, res: Response) => {
   const { senderId } = req.params;
 
   try {
     const requests = await ChatRequest.find({ senderId })
-      .populate("receiverId", "first_name last_name email image")
+      .populate("receiverId", "first_name last_name email ProfilePicture")
       .sort({ createdAt: -1 });
 
     res.json(requests);
   } catch (error: any) {
-    console.error(error);
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Accept OR Reject request
+
+// ✅ Accept / Reject
 export const updateRequestStatus = async (req: Request, res: Response) => {
   const { requestId } = req.params;
-  const { status } = req.body; // accepted | rejected
+  const { status } = req.body;
 
   try {
+    if (!["accepted", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
     const request = await ChatRequest.findById(requestId);
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
-    }
-
-    if (!["accepted", "rejected"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status value" });
     }
 
     request.status = status;
@@ -99,42 +109,34 @@ export const updateRequestStatus = async (req: Request, res: Response) => {
 
     res.json({ message: `Request ${status}`, request });
   } catch (error: any) {
-    console.error(error);
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Block User
+
+// ✅ Block User
 export const BlockUser = async (req: Request, res: Response) => {
   const { senderId, receiverId } = req.body;
-  try {
-    const sender = await User.findById(senderId);
-    const receiver = await User.findById(receiverId);
-    if (!sender || !receiver) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
-    const existingRequest = await ChatRequest.findOne({
+  try {
+    let request = await ChatRequest.findOne({
       senderId,
       receiverId,
     });
-    if (existingRequest) {
-      existingRequest.status = "blocked";
-      await existingRequest.save();
-    } else {
-      await ChatRequest.create({
+
+    if (!request) {
+      request = await ChatRequest.create({
         senderId,
         receiverId,
         status: "blocked",
       });
+    } else {
+      request.status = "blocked";
+      await request.save();
     }
-    res.status(200).json({ message: "User blocked successfully" });
-  }
-  catch (error: any) {
-    console.error(error);
-    res.status(400).json({ error: error.message });
+
+    res.json({ message: "User blocked", request });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 };
-
-
-
