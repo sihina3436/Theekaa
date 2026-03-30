@@ -8,9 +8,9 @@ const router = Router();
 
 router.post("/upload-post-image", verifyUser, upload.single("image"), uploadSingleImage);
 router.post("/upload-profile-image",verifyUser , upload.single("image"), uploadSingleImage);
-router.post("/upload-banner-image", upload.single("image"),uploadSingleImage );
-router.post("/upload-review-image",  upload.single("image"),uploadSingleImage );
-router.post("/upload-slide-image",  upload.single("image"),uploadSingleImage );
+router.post("/upload-banner-image",verifyAdmin, upload.single("image"),uploadSingleImage );
+router.post("/upload-review-image", verifyAdmin, upload.single("image"),uploadSingleImage );
+router.post("/upload-slide-image", verifyAdmin, upload.single("image"),uploadSingleImage );
 router.get("/banners", getBanners);
-router.delete("/delete-banner/:id", deleteBanner);
+router.delete("/delete-banner/:id", verifyAdmin, deleteBanner);
 export default router;

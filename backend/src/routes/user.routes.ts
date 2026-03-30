@@ -10,30 +10,31 @@ import {
   deleteUserById,
   addProfilePicture,
   removeProfilePicture,
-  updateProfilePicture
+  updateProfilePicture,
+  updateProfileStatus
 } from "../controllers/user.controller";
 
-import { verifyUser } from "../middleware/auth.middleware";
-import { allowRoles } from "../middleware/role.middleware";
+import { verifyUser, verifyAdmin } from "../middleware/auth.middleware";
 
 const router = Router();
 
 router.post("/sign-up", Signup);
 router.post("/sign-in", Signin);
 
-router.put("/update-profile/:id", verifyUser, allowRoles('user'), UpdateProfile);
-router.get("/get-user/:id", verifyUser, allowRoles('user'),getUser);
+router.put("/update-profile/:id", verifyUser, UpdateProfile);
+router.get("/get-user/:id", verifyUser,getUser);
 
-router.get("/get-all-users",verifyUser, allowRoles('user'), getAllUser);
+router.get("/get-all-users", verifyAdmin,getAllUser);
 
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 
-router.delete("/delete-user/:id", verifyUser, allowRoles('user'), deleteUserById);
+router.delete("/delete-user/:id", verifyAdmin,deleteUserById);
 
-router.post("/add-profile-picture", verifyUser, allowRoles('user'), addProfilePicture);
-router.put("/remove-profile-picture", verifyUser, allowRoles('user'), removeProfilePicture);
-router.put("/update-profile-picture", verifyUser, allowRoles('user'), updateProfilePicture);
+router.post("/add-profile-picture", verifyUser,addProfilePicture);
+router.put("/remove-profile-picture", verifyUser,removeProfilePicture);
+router.put("/update-profile-picture", verifyUser,updateProfilePicture);
+router.put("/update-profile-status", verifyAdmin,updateProfileStatus);
 
 
 
