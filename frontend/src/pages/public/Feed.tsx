@@ -38,18 +38,25 @@ const Feed: React.FC = () => {
       if (!haystack.includes(q)) return false;
     }
 
-    // 3. District
+    
     if (filters.district) {
-      const postDistrict = item.current_living?.toLowerCase();
-      const userDistrict = user?.district?.toLowerCase();
-      const target       = filters.district.toLowerCase();
-      if (postDistrict !== target && userDistrict !== target) return false;
+      const userDistrict = user?.district?.toLowerCase() || "";
+      const postDistrict = item.current_living?.toLowerCase() || "";
+      const filterValue = filters.district.toLowerCase();
+      
+      // Must match either user's district OR post's current_living
+      if (userDistrict !== filterValue && postDistrict !== filterValue) {
+        return false;
+      }
     }
 
-    // 4. Age — use `age` directly from backend JSON (no NIC calculation needed)
+    // 4. Age — FIX: Use age from backend, handle null/undefined properly
     if (filters.ageRange) {
-      const age = user?.age ?? null;
-      if (!ageInRange(age, filters.ageRange)) return false;
+      const age = user?.age;
+      // Only filter if age exists; if age is null/undefined, don't filter by age
+      if (age !== null && age !== undefined) {
+        if (!ageInRange(age, filters.ageRange)) return false;
+      }
     }
 
     // 5. Gender
@@ -171,10 +178,10 @@ const Feed: React.FC = () => {
             const user  = item.user_id;
             const liked = likedPosts[item._id];
 
-            // ✅ Age comes directly from backend JSON — no NIC or DOB calculation
+            // ✅ FIX: Age comes directly from backend JSON — safely handle null/undefined
             const age = user?.age ?? null;
 
-            // ✅ Format dateOfBirth nicely for display
+            // ✅ FIX: Format dateOfBirth nicely for display
             const dob = user?.dateOfBirth
               ? new Date(user.dateOfBirth).toLocaleDateString("en-US", {
                   year: "numeric",
@@ -247,7 +254,7 @@ const Feed: React.FC = () => {
                     {/* Location */}
                     <div className="flex items-center gap-1 mt-1 text-white/75 text-xs drop-shadow-sm">
                       <FiMapPin size={10} />
-                      <span>{user?.district || "—"}</span>
+                      <span>{user?.district || item.current_living || "—"}</span>
                     </div>
 
                   </div>
