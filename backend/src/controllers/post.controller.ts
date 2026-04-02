@@ -190,3 +190,23 @@ export const EditPost = async (req: Request, res: Response) => {
   }
 }
 
+export const getPostByUserId = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    // Get the sender's most recent active post
+    const post = await Post.findOne({ user_id: userId })
+      .populate("user_id", "first_name last_name ProfilePicture gender district occupation income height weight dateOfBirth age marriage_status")
+      .sort({ createdAt: -1 });
+
+    if (!post) {
+      return res.status(404).json({ message: "No post found for this user" });
+    }
+
+    return res.json({ data: post });
+  } catch (error: any) {
+    console.error("getPostByUserId error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+

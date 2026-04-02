@@ -24,6 +24,7 @@ export interface IUser extends Document {
   verifyOTPExpires?: Date;
   dateOfBirth?: Date;
   age?: number; 
+  fcmToken?: string;
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -78,6 +79,10 @@ const UserSchema = new Schema<IUser>(
     verifyOTPExpires: Date,
     dateOfBirth: Date,
     age: Number,
+    fcmToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
