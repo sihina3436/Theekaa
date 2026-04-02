@@ -162,7 +162,7 @@ const AddPost: React.FC = () => {
             {/* Other Details */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                othre details
+                Other Details
               </label>
               <textarea
                 rows={4}

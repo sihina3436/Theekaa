@@ -5,9 +5,9 @@ import {
   HiUserCircle,
   HiHeart,
   HiPlusCircle,
-  HiPaperAirplane,
   HiChat,
 } from "react-icons/hi";
+import { IoIosHome } from "react-icons/io";
 import { IconType } from "react-icons";
 import { useNavigate } from "react-router-dom";
 type NavLinkItem = {
@@ -20,8 +20,8 @@ const links: NavLinkItem[] = [
   { name: "Profile", icon: HiUserCircle, path: "/profile" },
   { name: "Feed", icon: HiHeart, path: "/feed" },
   { name: "Add Post", icon: HiPlusCircle, path: "/add-post" },
-  { name: "Requests", icon: HiPaperAirplane, path: "/chat-requests" },
-  { name: "Inbox", icon: HiChat, path: "/inbox" },
+  { name: "Chat Requests", icon: HiChat, path: "/chat-requests" },
+  { name: "Home", icon: IoIosHome  , path: "/" },
 ];
 
 const Navbar: React.FC = () => {

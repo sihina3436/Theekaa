@@ -4,17 +4,17 @@ import {
   HiUserCircle,
   HiHeart,
   HiPlusCircle,
-  HiPaperAirplane,
   HiChat,
 } from "react-icons/hi";
+import { IoIosHome } from "react-icons/io";
 
 const BottomNav: React.FC = () => {
   const links = [
     { name: "Profile", icon: HiUserCircle, path: "/profile" },
     { name: "Feed", icon: HiHeart, path: "/feed" },
     { name: "Add", icon: HiPlusCircle, path: "/add-post", center: true },
-    { name: "Requests", icon: HiPaperAirplane, path: "/chat-requests" },
-    { name: "Inbox", icon: HiChat, path: "/inbox" },
+    { name: "Chat Requests", icon: HiChat, path: "/chat-requests" },
+    { name: "Home", icon: IoIosHome  , path: "/" },
   ];
 
   return (
